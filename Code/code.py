@@ -7,6 +7,7 @@ import usb_hid
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keycode import Keycode
 from keycodes import profiles
+from rgbs import colors
 import displayio
 import rotaryio
 import digitalio
@@ -14,6 +15,12 @@ import time
 import random
 
 #Keyboard and rgb setup
+
+
+
+    
+
+
 keyPins = (
     board.KEY1,
     board.KEY2,
@@ -31,9 +38,18 @@ keyPins = (
 
 keys = keypad.Keys(keyPins, value_when_pressed=False, pull=True)
 neopixels = neopixel.NeoPixel(board.NEOPIXEL, 12, brightness=0.4)
-downColor = (0, 0, 255)
+
+def setPixels(profile):
+    for i in range(12):
+        colorSet = colors[profile]
+        neopixels[i] = colorSet[i]
+
+    neopixels.show()
+
+
+downColor = (0, 75, 10)
 upColor = (0, 20, 0) 
-neopixels.fill(downColor) 
+setPixels(0)
 kbd = Keyboard(usb_hid.devices)
 
 #Encoder setup
@@ -50,8 +66,9 @@ keycodes = profiles[profileCurrent]
 display = board.DISPLAY
 display.auto_refresh = False
 updateInterval = 1 #seconds per frame
-_DISPLAY_SLEEP_COMMAND = 0xAE
-_DISPLAY_WAKE_COMMAND = 0xAF
+sleepCmd = 0xAE
+wakeCmd = 0xAF
+display.bus.send(wakeCmd, b"")
 
 #Import sprite sheet and create TileGrid
 spritebmp = displayio.OnDiskBitmap("sprite.bmp")
@@ -84,24 +101,32 @@ maxLoops    = 2
 lastRefresh = 0
 
 #display and rgb timeout
-timeKey     = 0
-timeEncoder = 0
-timeout = 10
+timeKey     = time.monotonic()
+timeEncoder = time.monotonic()
+timeout     = 20 #timeout interval in seconds
+isSleep     = False
+
+
 #Main loop
 while True:
     now = time.monotonic()
+        
     #watch for keypresses and act accordingly
     event = keys.events.get()
     if event:
+        if isSleep is True:
+            isSleep = False
+            display.bus.send(wakeCmd, b"")
+            setPixels(profileCurrent)
+
         key_number = event.key_number
+        timeKey    = now
         # A key transition occurred.
         if event.pressed:
             kbd.press(*keycodes[key_number])
-            neopixels[key_number] = upColor
 
         if event.released:
             kbd.release(*keycodes[key_number])
-            neopixels[key_number] = downColor
             timeKey = now
     #watch encoder position
     encoderCurrent = encoder.position
@@ -113,10 +138,17 @@ while True:
         else:
             profileCurrent = 0
         
+        if isSleep is True:
+            isSleep = False
+            display.bus.send(wakeCmd, b"")
+            setPixels(profileCurrent)
+
         encoderLast = encoderCurrent
+        timeEncoder = now
         keycodes = profiles[profileCurrent]
         sprite[0] = loop[profileCurrent][loopFrame]
         display.refresh()
+        setPixels(profileCurrent)
         
     #counterclockwise
     if encoder.position < encoderLast:
@@ -125,10 +157,17 @@ while True:
         else:
             profileCurrent = (len(profiles)-1)
         
+        if isSleep is True:
+            isSleep = False
+            display.bus.send(wakeCmd, b"")
+            setPixels(profileCurrent)
+        
         encoderLast = encoderCurrent
+        timeEncoder = now
         keycodes = profiles[profileCurrent]
         sprite[0] = loop[profileCurrent][loopFrame]
         display.refresh()
+        setPixels(profileCurrent)
 
     #Animation Control
     
@@ -171,3 +210,9 @@ while True:
                 updateInterval = 1
         lastRefresh = now
         display.refresh()
+
+        #OLED Sleep
+        if (now - max(timeKey, timeEncoder) >= timeout) and isSleep is False:
+            isSleep = True
+            display.bus.send(sleepCmd, b"")
+            neopixels.fill((0,0,0))

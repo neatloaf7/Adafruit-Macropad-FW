@@ -3,7 +3,7 @@ profiles = [
     
     [
     (Keycode.SHIFT, Keycode.F3),     (Keycode.SHIFT, Keycode.F1), (Keycode.SHIFT, Keycode.F2),
-    (Keycode.SHIFT, Keycode.ESCAPE), (Keycode.UP_ARROW,) ,        (Keycode.ENTER,),
+    (Keycode.ESCAPE,), (Keycode.UP_ARROW,) ,        (Keycode.ENTER,),
     (Keycode.LEFT_ARROW,),           (Keycode.DOWN_ARROW,),       (Keycode.RIGHT_ARROW,),
     (Keycode.F13,),                  (Keycode.F14,),              (Keycode.F15,)
     ],
