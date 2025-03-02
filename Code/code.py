@@ -1,5 +1,4 @@
 #import libraries
-
 import board
 import keypad
 import neopixel
@@ -12,15 +11,8 @@ import displayio
 import rotaryio
 import digitalio
 import time
-import random
 
 #Keyboard and rgb setup
-
-
-
-    
-
-
 keyPins = (
     board.KEY1,
     board.KEY2,
@@ -37,20 +29,24 @@ keyPins = (
 )
 
 keys = keypad.Keys(keyPins, value_when_pressed=False, pull=True)
-neopixels = neopixel.NeoPixel(board.NEOPIXEL, 12, brightness=0.4)
-
-def setPixels(profile):
-    for i in range(12):
-        colorSet = colors[profile]
-        neopixels[i] = colorSet[i]
-
-    neopixels.show()
-
-
-downColor = (0, 75, 10)
-upColor = (0, 20, 0) 
-setPixels(0)
 kbd = Keyboard(usb_hid.devices)
+
+neopixels = neopixel.NeoPixel(board.NEOPIXEL, 12, brightness=0.4)
+rgbWait   = .0375
+updateRow = 0
+rgbLast   = 0
+rgbChange = True
+isBlack   = False
+
+def setPixels(profileCurrent, updateRow):
+    global rgbLast
+    global rowInd
+    colorSet = colors[profileCurrent]
+    rowInd = slice(updateRow*3, updateRow*3+3)
+    neopixels[rowInd] = colorSet[rowInd]
+    rgbLast = time.monotonic()
+
+setPixels(0,0)
 
 #Encoder setup
 encoder = rotaryio.IncrementalEncoder(board.ROTB, board.ROTA)
@@ -117,7 +113,7 @@ while True:
         if isSleep is True:
             isSleep = False
             display.bus.send(wakeCmd, b"")
-            setPixels(profileCurrent)
+            rgbChange = True
 
         key_number = event.key_number
         timeKey    = now
@@ -141,14 +137,15 @@ while True:
         if isSleep is True:
             isSleep = False
             display.bus.send(wakeCmd, b"")
-            setPixels(profileCurrent)
+            #setPixels(profileCurrent, updateRow)
 
         encoderLast = encoderCurrent
         timeEncoder = now
         keycodes = profiles[profileCurrent]
         sprite[0] = loop[profileCurrent][loopFrame]
         display.refresh()
-        setPixels(profileCurrent)
+        updateRow = 0
+        rgbChange = True
         
     #counterclockwise
     if encoder.position < encoderLast:
@@ -160,17 +157,17 @@ while True:
         if isSleep is True:
             isSleep = False
             display.bus.send(wakeCmd, b"")
-            setPixels(profileCurrent)
+            #setPixels(profileCurrent)
         
         encoderLast = encoderCurrent
         timeEncoder = now
         keycodes = profiles[profileCurrent]
         sprite[0] = loop[profileCurrent][loopFrame]
         display.refresh()
-        setPixels(profileCurrent)
+        updateRow = 0
+        rgbChange = True
 
     #Animation Control
-    
     if now - lastRefresh >= updateInterval:
         print(loopCounter)
         #regular loop
@@ -211,8 +208,32 @@ while True:
         lastRefresh = now
         display.refresh()
 
-        #OLED Sleep
-        if (now - max(timeKey, timeEncoder) >= timeout) and isSleep is False:
-            isSleep = True
-            display.bus.send(sleepCmd, b"")
-            neopixels.fill((0,0,0))
+    #RGB control
+    #Cascade profile changes downward
+    if now - rgbLast >= rgbWait and rgbChange:
+        if updateRow < 3:
+            if isBlack:
+                neopixels[slice(updateRow*3, updateRow*3+3)] = (50,50,0) *3
+                rgbLast = now
+                isBlack = False
+            else:
+                setPixels(profileCurrent, updateRow)
+                updateRow += 1
+                isBlack = True
+    
+        else:
+            if isBlack:
+                neopixels[slice(updateRow*3, updateRow*3+3)] = (50,50,0) *3
+                rgbLast = now
+                isBlack = False
+            else:
+                setPixels(profileCurrent, updateRow)
+                updateRow = 0
+                rgbChange = False
+                isBlack = True
+
+    #OLED Sleep
+    if (now - max(timeKey, timeEncoder) >= timeout) and isSleep is False:
+        isSleep = True
+        display.bus.send(sleepCmd, b"")
+        neopixels.fill((0,0,0))
