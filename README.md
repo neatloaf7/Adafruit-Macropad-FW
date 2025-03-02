@@ -17,3 +17,7 @@ Uses the [Adafruit_HID](https://github.com/adafruit/Adafruit_CircuitPython_HID) 
 ### Issues
 - clean up serial messages
 - add encoder debouncer
+
+### Updates
+- 02MAR25
+  - Added an animation for the LEDs that cascades the new rgb profile downwards
