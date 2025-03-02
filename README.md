@@ -1,5 +1,6 @@
 # Adafruit-Macropad-FW
 ## My CircuitPython firmware used on the Adafruit Macropad
+![gamesloop](https://github.com/user-attachments/assets/197278c6-db11-4f7f-87a4-4d8d55d6752c)
 ### Features
 - Supports multiple profiles, currently using 2
 - profile keymaps and neopixel colors are set in keycodes.py and rgbs.py
