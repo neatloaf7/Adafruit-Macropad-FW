@@ -4,6 +4,7 @@ import keypad
 import neopixel
 import usb_hid
 from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.mouse import Mouse
 from adafruit_hid.keycode import Keycode
 from keycodes import profiles
 from rgbs import colors
@@ -11,6 +12,40 @@ import displayio
 import rotaryio
 import digitalio
 import time
+from adafruit_seesaw.seesaw import Seesaw
+from micropython import const
+import adafruit_imageload
+
+
+#gamepadsetup
+BUTTON_X = const(6)
+BUTTON_Y = const(2)
+BUTTON_A = const(5)
+BUTTON_B = const(1)
+BUTTON_SELECT = const(0)
+BUTTON_START = const(16)
+button_mask = const(
+    (1 << BUTTON_X)
+    | (1 << BUTTON_Y)
+    | (1 << BUTTON_A)
+    | (1 << BUTTON_B)
+    | (1 << BUTTON_SELECT)
+    | (1 << BUTTON_START)
+)
+mouse = Mouse(usb_hid.devices)
+
+i2c_bus = board.STEMMA_I2C()  # The built-in STEMMA QT connector on the microcontroller
+# i2c_bus = board.I2C()  # Uses board.SCL and board.SDA. Use with breadboard.
+
+seesaw = Seesaw(i2c_bus, addr=0x50)
+
+seesaw.pin_mode_bulk(button_mask, seesaw.INPUT_PULLUP)
+
+last_x = 511
+last_y = 511
+deadzone = 37
+altScale = False
+xCheck = False
 
 #Keyboard and rgb setup
 keyPins = (
@@ -32,7 +67,7 @@ keys = keypad.Keys(keyPins, value_when_pressed=False, pull=True)
 kbd = Keyboard(usb_hid.devices)
 
 neopixels = neopixel.NeoPixel(board.NEOPIXEL, 12, brightness=0.4)
-rgbWait   = .0375
+rgbWait   = .04
 updateRow = 0
 rgbLast   = 0
 rgbChange = True
@@ -169,19 +204,16 @@ while True:
 
     #Animation Control
     if now - lastRefresh >= updateInterval:
-        print(loopCounter)
         #regular loop
         if loopFrame < 5:
             loopFrame += 1
             sprite[0] = loop[profileCurrent][loopFrame]
-            print(now)
        
         #if not at maxLoops yet, loop to frame 0 and add one to loopCounter
         elif loopCounter < maxLoops:
             loopFrame = 0
             loopCounter +=1
             sprite[0] = loop[profileCurrent][loopFrame]
-            print(now)
         
         #if at maxLoops, skip displaying frame 0 and begin scene. change frame rate to be 8 times faster for the scene.
         if loopCounter == maxLoops:
@@ -190,10 +222,8 @@ while True:
                 sprite[0] = mixups[scene][profileCurrent][sceneFrame]
                 sceneFrame += 1
                 lastRefresh = now
-                print(now)
             else:
                 loopFrame = 1
-                print(loopFrame)
                 sprite[0] = loop[profileCurrent][loopFrame]
                 loopCounter = 0
                 sceneFrame = 0
@@ -203,7 +233,6 @@ while True:
                     scene = 0
                     
                 lastRefresh = now
-                print(now)
                 updateInterval = 1
         lastRefresh = now
         display.refresh()
@@ -231,6 +260,59 @@ while True:
                 updateRow = 0
                 rgbChange = False
                 isBlack = True
+
+    #Gamepad
+    x = 511 - seesaw.analog_read(14)
+    y = 511 - seesaw.analog_read(15)
+
+    if (abs(x) > deadzone) or (abs(y) > deadzone):
+        if altScale:
+            mouse.move(round(x/7), -round(y/7))
+        else:
+            mouse.move(round(x/50), -round(y/50))
+        print(x, y)
+
+    buttons = seesaw.digital_read_bulk(button_mask)
+
+    if not buttons & (1 << BUTTON_X):
+        if not xCheck:
+            xCheck = True
+            altScale = not altScale
+            print ("altScale:", altScale)
+        print("Button x pressed")
+
+    if buttons & (1 << BUTTON_X):
+        xCheck = False
+
+    mouseLeft = False
+    if not buttons & (1 << BUTTON_Y):
+        print("Button y pressed")
+        mouseLeft = True
+
+    if mouseLeft:
+        mouse.press(Mouse.LEFT_BUTTON)
+    else:
+        mouse.release(Mouse.LEFT_BUTTON)
+
+    mouseRight = False
+
+    if not buttons & (1 << BUTTON_A):
+        print("Button A pressed")
+        mouseRight = True
+
+    if mouseRight:
+        mouse.press(Mouse.RIGHT_BUTTON)
+    else:
+        mouse.release(Mouse.RIGHT_BUTTON)
+
+    if not buttons & (1 << BUTTON_B):
+        print("Button B pressed")
+
+    if not buttons & (1 << BUTTON_SELECT):
+        print("Button Select pressed")
+
+    if not buttons & (1 << BUTTON_START):
+        print("Button Start pressed")
 
     #OLED Sleep
     if (now - max(timeKey, timeEncoder) >= timeout) and isSleep is False:
