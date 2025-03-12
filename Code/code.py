@@ -16,10 +16,12 @@ import adafruit_imageload
 import json
 import busio
 import asyncio
+import math
 
 #macropad setup
 macropad = MacroPad()
 macropad.display.auto_refresh = False
+macropad.pixels.brightness=0.5
 profile = 0
 
 #Import images
@@ -132,9 +134,9 @@ async def analog():
 
         if (abs(x) > deadzone) or (abs(y) > deadzone):
             if altScale:
-                mouse.move(round(x/10), -round(y/10))
+                mouse.move(round(math.copysign((abs(x)-deadzone)/15, x)), -round(math.copysign((abs(y)-deadzone)/15, y)))
             else:
-                mouse.move(round(x/100), -round(y/100))
+                mouse.move(round(math.copysign((abs(x)-deadzone)/125, x)), -round(math.copysign((abs(y)-deadzone)/125, y)))
             actionLast = time.monotonic()
             
         await asyncio.sleep(0)
