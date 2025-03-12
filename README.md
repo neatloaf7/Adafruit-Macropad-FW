@@ -9,10 +9,11 @@ See my [hackaday](https://hackaday.io/project/202556-adafruit-macropad-modding) 
 Uses the [Adafruit_HID](https://github.com/adafruit/Adafruit_CircuitPython_HID), [Adafruit_CircuitPython_MacroPad](https://github.com/adafruit/Adafruit_CircuitPython_MacroPad), [adafruit_seesaw](https://github.com/adafruit/Adafruit_Seesaw) and [neopixel](https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel) libraries.
 ### Features
 - Supports multiple profiles, currently using 2
-- profile keymaps and neopixel colors are set in keycodes.py and rgbs.py
+- profile keymaps and neopixel colors are set in config.json
 - Looping animation that indicates currently selected profile
   - After a set number of loops, play a fast effect animation
 - OLED and neopixel timeout
+- I2c gamepad added for mouse control
 
 ### Issues
 - clean up formatting, add comments
