@@ -4,9 +4,9 @@
 
 I ported over my settings from QMK as the CircuitPython displayio library makes animations simpler to work with.
 Not having to compile firmware is a big advantage, but my way of emulating QMK keymaps is not as easy to use.
-See my [hackaday](https://hackaday.io/project/202556-adafruit-macropad-modding) page for more details. 
+See my [hackaday](https://hackaday.io/project/202556-adafruit-macropad-modding) page for more details.
 
-Uses the [Adafruit_HID](https://github.com/adafruit/Adafruit_CircuitPython_HID), [Adafruit_CircuitPython_MacroPad](https://github.com/adafruit/Adafruit_CircuitPython_MacroPad), [adafruit_seesaw](https://github.com/adafruit/Adafruit_Seesaw) and [neopixel](https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel) libraries.
+Uses the [Adafruit_CircuitPython_MacroPad](https://github.com/adafruit/Adafruit_CircuitPython_MacroPad) and [adafruit_seesaw](https://github.com/adafruit/Adafruit_Seesaw) libraries.
 ### Features
 - Supports multiple profiles, currently using 2
 - profile keymaps and neopixel colors are set in config.json
@@ -17,6 +17,8 @@ Uses the [Adafruit_HID](https://github.com/adafruit/Adafruit_CircuitPython_HID),
 
 ### Issues
 - clean up formatting, add comments
+- remove vestigial libraries
+- add more pictures
 
 ### Updates
 - 11MAR25
