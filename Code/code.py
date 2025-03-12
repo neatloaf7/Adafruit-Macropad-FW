@@ -134,8 +134,7 @@ async def analog():
             if altScale:
                 mouse.move(round(x/10), -round(y/10))
             else:
-                mouse.move(round(x/50), -round(y/50))
-            #print(x, y)
+                mouse.move(round(x/100), -round(y/100))
             actionLast = time.monotonic()
             
         await asyncio.sleep(0)
@@ -152,26 +151,24 @@ async def button():
             if not xCheck:
                 xCheck = True
                 altScale = not altScale
-                print ("altScale:", altScale)
-            print("Button x pressed")
         if buttons & (1 << BUTTON_X):
             xCheck = False
         
         if not buttons & (1 << BUTTON_Y):
-            print("Button y pressed")
             mouseLeft = True
         if mouseLeft:
             mouse.press(Mouse.LEFT_BUTTON)
         else:
             mouse.release(Mouse.LEFT_BUTTON)
+        mouseLeft = False
         
         if not buttons & (1 << BUTTON_A):
-            print("Button A pressed")
             mouseRight = True
         if mouseRight:
             mouse.press(Mouse.RIGHT_BUTTON)
         else:
             mouse.release(Mouse.RIGHT_BUTTON)
+        mouseRight = False
         actionLast = time.monotonic()
 
         await asyncio.sleep(0.05)
@@ -187,7 +184,6 @@ async def key():
             else:
                 macropad.keyboard.release(*eval((keycodes[profile][key_event.key_number])))
             actionLast = time.monotonic()
-            print("key event")
 
         await asyncio.sleep(0)
 
@@ -198,7 +194,6 @@ async def encoder():
         currentPosition = macropad.encoder
         if currentPosition != lastPosition:
             profile = 1 - profile
-            print("profile:", profile)
             lastPosition = currentPosition
             actionLast = time.monotonic()
             screenGrid[0] = loopTable[profile][loopFrame]
