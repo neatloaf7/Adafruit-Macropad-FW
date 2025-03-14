@@ -6,6 +6,8 @@ I ported over my settings from QMK as the CircuitPython displayio library makes 
 Not having to compile firmware is a big advantage, but my way of emulating QMK keymaps is not as easy to use.
 See my [hackaday](https://hackaday.io/project/202556-adafruit-macropad-modding) page for more details.
 
+![image](https://github.com/user-attachments/assets/059e5eff-10fc-4808-ab1d-5e2780d0a23f)
+
 Uses the [Adafruit_CircuitPython_MacroPad](https://github.com/adafruit/Adafruit_CircuitPython_MacroPad) and [adafruit_seesaw](https://github.com/adafruit/Adafruit_Seesaw) libraries.
 ### Features
 - Supports multiple profiles, currently using 2
