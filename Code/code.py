@@ -134,9 +134,9 @@ async def analog():
 
         if (abs(x) > deadzone) or (abs(y) > deadzone):
             if altScale:
-                mouse.move(round(math.copysign((abs(x)-deadzone)/15, x)), -round(math.copysign((abs(y)-deadzone)/15, y)))
+                mouse.move(-round(math.copysign((abs(y)-deadzone)/15, y)), -round(math.copysign((abs(x)-deadzone)/15, x)))
             else:
-                mouse.move(round(math.copysign((abs(x)-deadzone)/125, x)), -round(math.copysign((abs(y)-deadzone)/125, y)))
+                mouse.move(-round(math.copysign((abs(y)-deadzone)/125, y)), -round(math.copysign((abs(x)-deadzone)/125, x)))
             actionLast = time.monotonic()
             
         await asyncio.sleep(0)

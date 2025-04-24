@@ -2,7 +2,6 @@ import storage
 import board, digitalio
 import microcontroller
 
-i2c_arm_baudrate=400000
 # On the Macropad, pressing a key grounds it. You need to set a pull-up.
 # If not pressed, the key will be at +V (due to the pull-up).
 button = digitalio.DigitalInOut(board.KEY12)

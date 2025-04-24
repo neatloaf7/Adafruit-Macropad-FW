@@ -19,14 +19,15 @@
         "green": [  0,  75,  10],
         "red":   [ 75,  10,   0],
         "white": [ 75,  75,  75],
-        "yellow":[ 50,  50,   0]
+        "yellow":[ 50,  50,   0],
+        "orange":[173, 107,   0]
     },
 
     "rgb": [
         ["blue", "blue", "blue",
      "red",  "white", "green",
      "white", "white", "white",
-     "black", "black", "black"],
+     "orange", "orange", "orange"],
 
      ["white", "white", "white",
       "white", "white", "white",
