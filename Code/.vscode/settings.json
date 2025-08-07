@@ -3,5 +3,12 @@
     "python.analysis.diagnosticSeverityOverrides": {
         "reportMissingModuleSource": "none",
         "reportShadowedImports": "none"
-    }
+    },
+    "python.analysis.extraPaths": [
+        "c:\\Users\\cmoon\\.vscode\\extensions\\wmerkens.vscode-circuitpython-v2-0.3.3\\boards\\0x10C4\\0xEA60",
+        "c:\\Users\\cmoon\\.vscode\\extensions\\wmerkens.vscode-circuitpython-v2-0.3.3\\stubs",
+        ""
+    ],
+    "circuitpython.board.vid": "0x10C4",
+    "circuitpython.board.pid": "0xEA60"
 }
