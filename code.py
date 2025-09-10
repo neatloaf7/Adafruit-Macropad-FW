@@ -18,10 +18,10 @@ import busio
 import asyncio
 import math
 
-#macropad setup
+#Setup Macropad Object
 macropad = MacroPad()
 macropad.display.auto_refresh = False
-macropad.pixels.brightness=0.5
+macropad.pixels.brightness=const(0.5)
 profile = 0
 
 #Import images
@@ -46,6 +46,7 @@ star2Bmp, palette = adafruit_imageload.load("star2.bmp",
                                             bitmap = displayio.Bitmap,
                                             palette = displayio.Palette)
 
+#Setup displayio groups for holding tilegrids
 splash = displayio.Group() #Main group
 backGroup = displayio.Group()
 screenGroup = displayio.Group(x=11, y=11)
@@ -54,6 +55,7 @@ flickerGroup = displayio.Group(x=11, y=11)
 star1Group     = displayio.Group(x=81, y=0)
 star2Group     = displayio.Group(x=81, y=0)
 
+#Setup tilegrids
 backGrid = displayio.TileGrid(backBmp, pixel_shader=palette)
 backGroup.append(backGrid)
 screenGrid = displayio.TileGrid(screenBmp, pixel_shader=palette,
@@ -77,13 +79,14 @@ star2Grid = displayio.TileGrid(star2Bmp, pixel_shader=palette,
                                 tile_width = 47, tile_height = 35)
 star2Group.append(star2Grid)
 
+#append groups and initialize display
 splash.append(backGroup)
 splash.append(screenGroup)
 splash.append(wavesGroup)
 macropad.display.root_group = splash
 macropad.display.refresh()
 
-#Keysetup
+#Key map setup
 with open("config.json", "r") as file:
     config = json.load(file)
 
@@ -92,13 +95,13 @@ colors   = config["colors"]
 rgb     = config["rgb"]
 macropad.pixels[0:12] = [colors[key] for key in rgb[0]]
 
-#gamepadsetup
-BUTTON_X = 6
-BUTTON_Y = 2
-BUTTON_A = 5
-BUTTON_B = 1
-BUTTON_SELECT = 0
-BUTTON_START = 16
+#Setup bitmask for seesaw bulk read
+BUTTON_X = const(6)
+BUTTON_Y = const(2)
+BUTTON_A = const(5)
+BUTTON_B = const(1)
+BUTTON_SELECT = const(0)
+BUTTON_START = const(16)
 button_mask = (
     (1 << BUTTON_X)
     | (1 << BUTTON_Y)
@@ -108,24 +111,27 @@ button_mask = (
     | (1 << BUTTON_START)
 )
 
+#initialize I2C bus and seesaw object for reading buttons
 i2c_bus = busio.I2C(board.SCL, board.SDA, frequency = 400000)
 seesaw = Seesaw(i2c_bus, addr=0x50)
 seesaw.pin_mode_bulk(button_mask, seesaw.INPUT_PULLUP)
+
 #Setup analog stick mouse controls
-deadzone = 37
+deadzone = const(37)
 mouse = Mouse(usb_hid.devices)
 #Initial joystick values (0-1023)
 last_x = 511
 last_y = 511
-
 altScale = False
 
+#setup sleep and last action event variables
 actionLast =  time.monotonic()
 
 isSleep    = False
 needsWake  = False
-timeout    = 30
+timeout    = const(30)
 
+#Analog stick mouse coroutine
 async def analog():
     global altScale, actionLast
     while True:
@@ -141,11 +147,13 @@ async def analog():
             
         await asyncio.sleep(0)
 
+#seesaw button coroutine
 async def button():
     xCheck = False
     mouseLeft = False
     mouseRight = False
     global altScale
+    
     while True:
         buttons = seesaw.digital_read_bulk(button_mask, delay=0)
 
