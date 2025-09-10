@@ -265,10 +265,10 @@ async def animation():
     flickerTable   = [list(range(0,8)), list(range(8,16))]
     while True:
 
-        screenGrid[0] = loopTable[profile][loopFrame]
-        wavesGrid[0]  = loopFrame
-        macropad.display.refresh()
         if awake.is_set():
+            screenGrid[0] = loopTable[profile][loopFrame]
+            wavesGrid[0]  = loopFrame
+            macropad.display.refresh()
             await(asyncio.sleep(updateInterval))
             if loopFrame < 5:
                 loopFrame += 1
