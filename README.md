@@ -18,6 +18,7 @@ Uses the [Adafruit_CircuitPython_MacroPad](https://github.com/adafruit/Adafruit_
 - I2c gamepad added for mouse control
 
 ### To do list
+- Modify key coroutine logic to recognize and accept consumer control codes if present in config.json keymap
 - Change animation task logic to await awake event instead of using if statement
 - Remove asyncio.gather from main(), not needed
 - add more pictures
