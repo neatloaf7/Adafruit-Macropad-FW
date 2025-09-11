@@ -27,7 +27,7 @@ Uses the [Adafruit_CircuitPython_MacroPad](https://github.com/adafruit/Adafruit_
 - 11SEP25 - Small coroutine optimizations for smoother analog stick mouse control
   - Cleaned some formatting and removed unused libraries
   - Added some comments
-  - Removed rgbUpdate task, rgbUpdate is now called by encoder and sleep tasks when needed
+  - Removed rgbUpdate task, rgbUpdate is now called by encoder and sleep coroutines when needed
   - Changed sleep coroutine logic and added an event to track wake/sleep status
   - Changed seesaw button coroutine logic to avoid looping through all coroutine checks if button state has not changed
   - Changed animation coroutine logic to check if awake is set before running loop
