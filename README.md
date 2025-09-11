@@ -17,12 +17,20 @@ Uses the [Adafruit_CircuitPython_MacroPad](https://github.com/adafruit/Adafruit_
 - OLED and neopixel timeout
 - I2c gamepad added for mouse control
 
-### Issues
-- clean up formatting, add comments
-- remove vestigial libraries
+### To do list
+- Change animation task logic to await awake event instead of using if statement
+- Remove asyncio.gather from main(), not needed
 - add more pictures
 
 ### Updates
+- 11SEP25 - Small coroutine optimizations for smoother analog stick mouse control
+  - Cleaned some formatting and removed unused libraries
+  - Added some comments
+  - Removed rgbUpdate task, rgbUpdate is now called by encoder and sleep tasks when needed
+  - Changed sleep coroutine logic and added an event to track wake/sleep status
+  - Changed seesaw button coroutine logic to avoid looping through all coroutine checks if button state has not changed
+  - Changed animation coroutine logic to check if awake is set before running loop
+  - Changed some debounce timing
 - 11MAR25
   - changed code to use asyncio, profile configs are now imported with a JSON file.
   - split up sprite bitmap to only update portions of screen that are animated. Image size reduced from 241kb to 13kb, and can now load using adafruit_imageload
