@@ -24,6 +24,9 @@ Uses the [Adafruit_CircuitPython_MacroPad](https://github.com/adafruit/Adafruit_
 - Remove asyncio.gather from main(), not needed
 - add more pictures
 
+### Issues
+- Animation logic is spaghetti
+  
 ### Updates
 - 11SEP25 - Small coroutine optimizations for smoother analog stick mouse control
   - Cleaned some formatting and removed unused libraries
