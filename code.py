@@ -18,7 +18,7 @@ import math
 #Setup Macropad Object
 macropad = MacroPad()
 macropad.display.auto_refresh = False
-macropad.pixels.brightness=const(0.5)
+macropad.pixels.brightness = const(0.5)
 profile = 0
 
 #Import images
@@ -91,7 +91,7 @@ keycodes = config["keycodes"]
 colors   = config["colors"]
 rgb     = config["rgb"]
 macropad.pixels[0:12] = [colors[key] for key in rgb[0]]
-rgbInterval = 0.05
+rgbInterval = const(0.05)
 
 #Setup bitmask for seesaw bulk read
 BUTTON_X = const(6)
@@ -272,12 +272,12 @@ async def sleep():
 
 #OLED animation coroutine
 async def animation():
-    updateInterval = 1
+    updateInterval = const(1)
+    maxLoops       = const(2)
     global loopFrame
     global loopTable
     loopFrame = 0
     loopCount      = 0
-    maxLoops       = 2
     mixupCount     = 0
     loopTable      = [list(range(0,6)) , list(range(6,12))]
     flickerTable   = [list(range(0,8)), list(range(8,16))]
