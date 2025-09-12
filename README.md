@@ -19,7 +19,6 @@ Uses the [Adafruit_CircuitPython_MacroPad](https://github.com/adafruit/Adafruit_
 - I2c gamepad added for mouse control
 
 ### To do list
-- Modify key coroutine logic to recognize and accept consumer control codes if present in config.json keymap
 - add more pictures
 
 ### Issues
@@ -32,6 +31,7 @@ Uses the [Adafruit_CircuitPython_MacroPad](https://github.com/adafruit/Adafruit_
   - Removed rgbUpdate task, rgbUpdate is now called by encoder and sleep coroutines when needed
   - Changed sleep coroutine logic and added an event to track wake/sleep status
   - Changed seesaw button coroutine logic to avoid looping through all coroutine checks if button state has not changed
+  - Added handling of consumer control codes 
   - Changed animation coroutine logic to check if awake is set before running loop
   - Changed some debounce timing
 - 11MAR25
