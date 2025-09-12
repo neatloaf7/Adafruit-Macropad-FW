@@ -114,7 +114,7 @@ seesaw = Seesaw(i2c_bus, addr=0x50)
 seesaw.pin_mode_bulk(button_mask, seesaw.INPUT_PULLUP)
 
 #Setup analog stick mouse controls
-deadzone = const(25)
+deadzone = const(30)
 mouse = Mouse(usb_hid.devices)
 #Initial joystick values (0-1023)
 last_x = 511
@@ -123,11 +123,9 @@ altScale = False
 
 #setup sleep and last action event variables
 actionLast =  time.monotonic()
-
 awake = asyncio.Event()
 awake.set()
-
-timeout    = const(30)
+timeout = const(30)
 
 #Analog stick mouse coroutine
 async def analog():
@@ -221,7 +219,7 @@ async def encoder():
 
         await asyncio.sleep(0.02)
 
-#RGB coroutine
+#RGB coroutine: REMOVE TASK CALL FROM ENCODER OR SLEEP EVENT
 async def rgbUpdate():
     for i in range(0,4):
         ind = slice(i*3, i*3+3)
@@ -265,53 +263,53 @@ async def animation():
     flickerTable   = [list(range(0,8)), list(range(8,16))]
     while True:
 
-        if awake.is_set():
-            screenGrid[0] = loopTable[profile][loopFrame]
-            wavesGrid[0]  = loopFrame
-            macropad.display.refresh()
-            await(asyncio.sleep(updateInterval))
-            if loopFrame < 5:
-                loopFrame += 1
-            elif loopCount < maxLoops: 
+        await awake.wait()
+        screenGrid[0] = loopTable[profile][loopFrame]
+        wavesGrid[0]  = loopFrame
+        macropad.display.refresh()
+        await(asyncio.sleep(updateInterval))
+        if loopFrame < 5:
+            loopFrame += 1
+        elif loopCount < maxLoops: 
+            loopFrame = 0
+            loopCount += 1
+        else:
+            if mixupCount == 0: 
+                splash.remove(screenGroup)
+                splash.append(flickerGroup)
+                for i in range(8):
+                    flickerGrid[0] = flickerTable[profile][i]
+                    macropad.display.refresh()
+                    await asyncio.sleep(.125)
+                splash.remove(flickerGroup)
+                splash.append(screenGroup)
+                mixupCount = 1
+            elif mixupCount == 1:
+                splash.remove(wavesGroup)
+                splash.append(star1Group)
                 loopFrame = 0
-                loopCount += 1
-            else:
-                if mixupCount == 0: 
-                    splash.remove(screenGroup)
-                    splash.append(flickerGroup)
-                    for i in range(8):
-                        flickerGrid[0] = flickerTable[profile][i]
-                        macropad.display.refresh()
-                        await asyncio.sleep(.125)
-                    splash.remove(flickerGroup)
-                    splash.append(screenGroup)
-                    mixupCount = 1
-                elif mixupCount == 1:
-                    splash.remove(wavesGroup)
-                    splash.append(star1Group)
-                    loopFrame = 0
-                    screenGrid[0] = loopTable[profile][loopFrame]
-                    for i in range(8):
-                        star1Grid[0] = i
-                        macropad.display.refresh()
-                        await asyncio.sleep(.125)
-                    splash.remove(star1Group)
-                    splash.append(wavesGroup)
-                    mixupCount = 2
-                elif mixupCount == 2:
-                    splash.remove(wavesGroup)
-                    splash.append(star2Group)
-                    loopFrame = 0
-                    screenGrid[0] = loopTable[profile][loopFrame]
-                    for i in range(8):
-                        star2Grid[0] = i
-                        macropad.display.refresh()
-                        await asyncio.sleep(.125)
-                    splash.remove(star2Group)
-                    splash.append(wavesGroup)
-                    mixupCount = 0   
-                loopFrame = 1
-                loopCount = 0
+                screenGrid[0] = loopTable[profile][loopFrame]
+                for i in range(8):
+                    star1Grid[0] = i
+                    macropad.display.refresh()
+                    await asyncio.sleep(.125)
+                splash.remove(star1Group)
+                splash.append(wavesGroup)
+                mixupCount = 2
+            elif mixupCount == 2:
+                splash.remove(wavesGroup)
+                splash.append(star2Group)
+                loopFrame = 0
+                screenGrid[0] = loopTable[profile][loopFrame]
+                for i in range(8):
+                    star2Grid[0] = i
+                    macropad.display.refresh()
+                    await asyncio.sleep(.125)
+                splash.remove(star2Group)
+                splash.append(wavesGroup)
+                mixupCount = 0   
+            loopFrame = 1
+            loopCount = 0
         await(asyncio.sleep(0))
             
 
