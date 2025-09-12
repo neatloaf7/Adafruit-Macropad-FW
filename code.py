@@ -115,7 +115,7 @@ seesaw = Seesaw(i2c_bus, addr=0x50)
 seesaw.pin_mode_bulk(button_mask, seesaw.INPUT_PULLUP)
 
 #Setup analog stick mouse controls
-deadzone = const(30)
+deadzone = const(35)
 mouse = Mouse(usb_hid.devices)
 
 #Initial joystick values (0-1023)
@@ -147,9 +147,9 @@ async def analog():
 
 #seesaw button coroutine
 async def button():
-    xCheck = False
     mouseLeft = False
     mouseRight = False
+    bHeld = False
     global altScale
     buttons_last = button_mask
     
@@ -176,6 +176,16 @@ async def button():
                     mouse.press(Mouse.RIGHT_BUTTON)
                 else:
                     mouse.release(Mouse.RIGHT_BUTTON)
+
+            if buttons_last & (1 << BUTTON_B) != (
+                    buttons & (1 << BUTTON_B)):
+                if not buttons & (1 << BUTTON_B):
+                    if bHeld:
+                        mouse.release(Mouse.LEFT_BUTTON)
+                        bHeld = False
+                    else:
+                        mouse.press(Mouse.LEFT_BUTTON) 
+                        bHeld = True
 
             buttons_last = buttons
             action.set()  
