@@ -4,6 +4,7 @@ import usb_hid
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
 from adafruit_hid.keycode import Keycode
+from adafruit_hid.consumer_control_code import ConsumerControlCode
 import displayio
 import time
 from adafruit_seesaw.seesaw import Seesaw
@@ -187,12 +188,19 @@ async def key():
     global actionLast
     while True:
         key_event = macropad.keys.events.get()
-
         if key_event:
+            code = keycodes[profile][key_event.key_number]
             if key_event.pressed == True:
-                macropad.keyboard.press(*eval((keycodes[profile][key_event.key_number])))
+                if code[0] == "C":
+                    macropad.consumer_control.press(*eval(code))
+                else:
+                    macropad.keyboard.press(*eval(code))
             else:
-                macropad.keyboard.release(*eval((keycodes[profile][key_event.key_number])))
+                if code[0] == "C":
+                    macropad.consumer_control.release()
+                else:
+                    macropad.keyboard.release(*eval(code))
+                    
             actionLast = time.monotonic()
 
         await asyncio.sleep(0)
@@ -219,7 +227,7 @@ async def encoder():
 
         await asyncio.sleep(0.02)
 
-#RGB coroutine: REMOVE TASK CALL FROM ENCODER OR SLEEP EVENT
+#RGB coroutine
 async def rgbUpdate():
     for i in range(0,4):
         ind = slice(i*3, i*3+3)
@@ -243,7 +251,6 @@ async def sleep():
         #wake
         if not awake.is_set() and now - actionLast < timeout:
             isSleep = False
-            #needsWake = True
             rgbTask = asyncio.create_task(rgbUpdate())
             macropad.display_sleep = False
             awake.set()
