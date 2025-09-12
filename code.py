@@ -117,20 +117,21 @@ seesaw.pin_mode_bulk(button_mask, seesaw.INPUT_PULLUP)
 #Setup analog stick mouse controls
 deadzone = const(30)
 mouse = Mouse(usb_hid.devices)
+
 #Initial joystick values (0-1023)
 last_x = 511
 last_y = 511
 altScale = False
 
 #setup sleep and last action event variables
-actionLast =  time.monotonic()
+action = asyncio.Event()
 awake = asyncio.Event()
 awake.set()
-timeout = const(30)
+sleep_timeout = const(30)
 
 #Analog stick mouse coroutine
 async def analog():
-    global altScale, actionLast
+    global altScale
     while True:
         x = 511 - seesaw.analog_read(14, delay=0)
         y = 511 - seesaw.analog_read(15, delay=0)
@@ -140,8 +141,8 @@ async def analog():
                 mouse.move(-round(math.copysign((abs(y)-deadzone)/15, y)), -round(math.copysign((abs(x)-deadzone)/15, x)))
             else:
                 mouse.move(-round(math.copysign((abs(y)-deadzone)/125, y)), -round(math.copysign((abs(x)-deadzone)/125, x)))
-            actionLast = time.monotonic()
             
+            action.set()
         await asyncio.sleep(0)
 
 #seesaw button coroutine
@@ -156,7 +157,6 @@ async def button():
         buttons = seesaw.digital_read_bulk(button_mask, delay=0)
         
         if buttons != buttons_last:
-
             if buttons_last & (1 << BUTTON_X) != (
                 buttons & (1 << BUTTON_X)):
                 if not buttons & (1 << BUTTON_X):
@@ -178,14 +178,12 @@ async def button():
                     mouse.release(Mouse.RIGHT_BUTTON)
 
             buttons_last = buttons
-            actionLast = time.monotonic()
-        
+            action.set()  
         await asyncio.sleep(0.02)
 
             
 #Key coroutine
 async def key():
-    global actionLast
     while True:
         key_event = macropad.keys.events.get()
         if key_event:
@@ -195,19 +193,19 @@ async def key():
                     macropad.consumer_control.press(*eval(code))
                 else:
                     macropad.keyboard.press(*eval(code))
+            
             else:
                 if code[0] == "C":
                     macropad.consumer_control.release()
                 else:
                     macropad.keyboard.release(*eval(code))
                     
-            actionLast = time.monotonic()
-
+            action.set()
         await asyncio.sleep(0)
 
 #Encoder coroutine
 async def encoder():
-    global profile, actionLast, loopTable
+    global profile, loopTable
     lastPosition = 0
     switchLast = False
     while True:
@@ -215,14 +213,14 @@ async def encoder():
         if currentPosition != lastPosition:
             profile = 1 - profile
             lastPosition = currentPosition
-            actionLast = time.monotonic()
+            action.set()
             screenGrid[0] = loopTable[profile][loopFrame]
             macropad.display.refresh()
             rgbTask = asyncio.create_task(rgbUpdate())
         
         if macropad.encoder_switch != switchLast:
             if macropad.encoder_switch:
-                actionLast = time.monotonic()
+                action.set()
             switchLast = macropad.encoder_switch
 
         await asyncio.sleep(0.02)
@@ -239,22 +237,27 @@ async def rgbUpdate():
 
 #Sleep and wake coroutine
 async def sleep():
-    #global needsWake
     while True:
-        now = time.monotonic()
         #sleep
-        if awake.is_set() and now - actionLast >= timeout:
-            macropad.pixels.fill((0,0,0))
-            awake.clear()
-            macropad.display_sleep = True
+        if awake.is_set():
+            try: 
+                await asyncio.wait_for(action.wait(), timeout=sleep_timeout)
+                action.clear()
+                continue
+            except asyncio.TimeoutError:
+                macropad.pixels.fill((0,0,0))
+                awake.clear()
+                macropad.display_sleep = True
+                await asyncio.sleep(0)
 
         #wake
-        if not awake.is_set() and now - actionLast < timeout:
-            isSleep = False
+        else:
+            await action.wait()
+            action.clear()
             rgbTask = asyncio.create_task(rgbUpdate())
             macropad.display_sleep = False
             awake.set()
-        await asyncio.sleep(0)
+            await asyncio.sleep(0)
 
 
 #OLED animation coroutine
